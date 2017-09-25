@@ -8,3 +8,9 @@ VOLUME /etc/gitlab-runner
 COPY config.toml /etc/gitlab-runner/config.toml
 CMD gitlab-ci-multi-runner run --user=gitlab-runner --working-directory=/home/gitlab-runner
 RUN npm install -g coffee-script && rm -rf /root/.npm /root/.node-gyp
+COPY stack-fix.c /lib/
+RUN set -ex \
+    && apk add --no-cache  --virtual .build-deps build-base \
+    && gcc  -shared -fPIC /lib/stack-fix.c -o /lib/stack-fix.so \
+    && apk del .build-deps
+ENV LD_PRELOAD /lib/stack-fix.so
